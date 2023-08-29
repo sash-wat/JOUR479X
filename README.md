@@ -1,2 +1,2 @@
-# jour479x_fall_2023
+# JOUR479X, Fall 2023
 Template repository for Sports Data Analysis &amp; Visualization
