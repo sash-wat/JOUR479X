@@ -1,0 +1,5 @@
+# Super Cool Notebook, August 29, 2023
+```{r}
+library(tidyverse)
+```
+
