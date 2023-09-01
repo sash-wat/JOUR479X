@@ -28,24 +28,68 @@ Now, onto the questions using aggregates, which means `group_by` and `summarize`
 1. How many shots in total has Maryland attempted and how many have been on goal? Calculate a percentage of shots on goal.
 
 ```{r}
-
+matches_2023 |>
+  group_by(team) |>
+  summarise(
+    shots = sum(sh_att),
+    shotsOnGoal = sum(so_g),
+    sOGPercent = (shotsOnGoal/shots)*100
+  ) |> 
+  filter(str_detect(team, "Maryland"))
 ```
+Based on the above function, (I used string filtering to find teams that had "Maryland" in their name to avoid clicking through the 50+ pages), Maryland Women's Soccer has a shots on goal percentage of 53.57%. They have attempted a total of 56 shots, of which 30 have been on goal.
+
+Resource used for question 1: https://stackoverflow.com/questions/22850026/filter-rows-which-contain-a-certain-string
+
 
 2. What about the same shot stats from last season's first four games? You'll need to load the matches from 2022 - just change the season in the URL - and filter by date to find the first four games.
 
 ```{r}
+matches_2022 <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2022.csv")
+
+matches_2022 |>
+  filter(str_detect(team, "Maryland Terrapins")) |>
+  filter(date < '2022-09-02') |>
+  group_by(team) |>
+  summarise(
+    shots = sum(sh_att),
+    shotsOnGoal = sum(so_g),
+    sOGPercent = (shotsOnGoal/shots)*100
+  )
+
 
 ```
+It would appear that in the first 4 games of the 2022 season, Maryland Women's Soccer had 48 total shots, 23 of which were on target, for a shots on goal percentage of 47.92%
+
 
 
 3. What about draws - Maryland started 2022 with 4 ties. Have any other teams had as many this season?
 
 ```{r}
+matches_2023 |>
+  filter(str_detect(outcome, "Draw")) |>
+  group_by(team) |>
+  summarise(
+    draws = n()
+  ) |>
+  filter(draws == 4)
 ```
+There are 3 teams in 2023 that have 4 draws so far: Denver, Indiana State, and Maryland themselves.
+
 
 
 4. How many total corner kicks has Maryland had so far and how many have its opponents have? Calculate the difference between the two totals for every team.
 
 ```{r}
+head(matches_2023)
+
+matches_2023 |>
+  group_by(team) |>
+  summarise(
+    cornersFor = sum(corners),
+    cornersAgainst = sum(defensive_corners)
+  ) #|>
+  #ilter(str_detect(team, "Maryland Terrapins"))
 ```
 
+So far this season, Maryland has taken 13 corners, and allowed 20. To find these values, we can remove the "#" characters to un-comment the code in lines 91 and 92.
