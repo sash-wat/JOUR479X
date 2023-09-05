@@ -134,10 +134,19 @@ In most contests, like the batting title in Major League Baseball, there's a min
 players |>
   mutate(trueshooting = (PTS/(2*(FGA + (.44*FTA))))*100) |>
   arrange(desc(trueshooting)) |>
-  filter(**REPLACE WITH CODE LIMITING TO PLAYERS WITH MORE THAN 100 MINUTES PLAYED**)
+  filter(FGA >= 135 + 126, FTA >= 42 + 45.5, PTS >= 168 + 162)
 ```
 
 **ANSWER** Who do you get as the first result, and what was his trueshooting percentage?
+The first result is Moses Bol of the Milwaukee Panthers, and his true shooting percentage is 83.03%
+
+In Class Answer/Assignment:
+The criteria I chose were that a player had to be at least 1 standard deviation above the mean in the following categories:
+1. Attempted Field Goals
+3. Attempted Free Throws
+4. Total Points
+
+I chose these three fields because they are the components of the given true shooting equation from class on 2023-09-05.
 
 
 So is 100 minutes our level? Here's the truth -- there's not really an answer here. We're picking a cutoff. If you can cite a reason for it and defend it, then it probably works.
