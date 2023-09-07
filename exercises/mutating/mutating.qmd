@@ -12,6 +12,7 @@ So first we'll import the tidyverse so we can read in our data and begin to work
 #| warning: false
 #| message: false
 # load the tidyverse here
+library(tidyverse)
 ```
 
 Now you'll need a common and simple dataset of total attendance at NCAA football games over the last few seasons.
@@ -52,6 +53,8 @@ head(attendance)
 What's one thing you notice about the data that might make year-over-year comparisons more complex?
 
 **Answer** DESCRIBE IT HERE
+Appalachian state switched conferences between the 2013 and 2014 seasons, so we'll have to handle NAs in some form or merge the columns. Additionally, a number of schools did not have attendance
+in 2020 due to the COVID-19 pandemic, which causes a column issue of NA
 
 The code to calculate percent change is pretty simple. Remember, with `summarize`, we used `n()` to count things. With `mutate`, we use very similar syntax to calculate a new value using other values in our dataset. So in this case, we're trying to do (new-old)/old, but we're doing it with fields. If we look at what we got when we did `head`, you'll see there's \`2022\` as the new data, and we'll use \`2021\` as the old data. So we're looking at one year. Then, to help us, we'll use arrange again to sort it, so we get the fastest growing school over one year.
 
@@ -79,6 +82,8 @@ Who had the most growth in 2022 compared to the year before? What could account 
 
 **Answer** YOUR ANSWER HERE
 
+FIU seemingly has an "infinite" raise in attendance, but this is due to a divide by 0 error caused by a 0 value in FIU's 2021 attendance number. In reality, Hawaii had the highest raise in attendance, with over 360%. An interesting note here is that the two teams with real values were both from the MWC conference, and there is a 3rd MWC team in the top 10, so perhaps viewership or at least attendance is recognizable conference-wide.
+
 ## Back to women's soccer
 
 Let's turn back to the women's soccer match data from this season.
@@ -93,15 +98,20 @@ Previously we calculated totals for shots attempted and shots on goal for each t
 
 ```{r}
 matches_2023 |> 
-  group_by(REPLACE WITH GROUP_BY) |> 
+  group_by(team) |> 
   summarise(
-    total_on_goal = REPLACE WITH FORMULA,
-    total_goals = REPLACE WITH FORMULA
+    games = n(),
+    total_on_goal =sum(so_g),
+    total_goals = sum(goals),
+    gpg = total_goals/games
   ) |> 
-  mutate(percent = REPLACE WITH FORMULA) |> 
+  mutate(percent = (total_goals/total_on_goal)*100) |> 
   arrange(desc(percent))
 ```
 
 What stands out to you here? Describe that below. Would you narrow down the results to certain teams based on the data? If so, do that in the code and explain why you did it below. Finally, what's the most interesting result to you that could be a story?
 
 **Answer** YOUR ANSWER HERE
+So far in the 2023 data, it is surprising that a school like Oklahoma state is scoring so many goals. It would appear that a team like the California Golden Bears, while having the highest shots on goal to goals conversion rate, actually are probably one of the worst teams offensively, since they've scored 2.25 goals per game, but a team like OKST with a significantly lower conversion rate scores 4 goals per game, which probably will be reflected in a better win total.
+
+I wouldn't really narrow down results because now we are at a point where teams are into their seasons, and issues of "sample size" are likely starting to regularize.
