@@ -93,3 +93,32 @@ matches_2023 |>
 ```
 
 So far this season, Maryland has taken 13 corners, and allowed 20. To find these values, we can remove the "#" characters to un-comment the code in lines 91 and 92.
+
+## In class work for Thursday, September 14, 2023 below (SIGNIFICANCE TESTING):
+
+Hypothesis: There is more scoring in Women's Soccer this season than last season.
+
+```{r}
+matches_2022 <- matches_2022 |> mutate(total_goals = goals + defensive_goals)
+
+matches_2023 <- matches_2023 |> mutate(total_goals = goals + defensive_goals)
+```
+```{r}
+t.test(matches_2022$total_goals, matches_2023$total_goals)
+```
+
+The results of the total goals t-test indicate that in over 99% of simulations, there is a statistically significant relationship between the two variables, so the rise in scoring is notable. Null hypothesis rejected.
+
+Publication sentence: Is NCAA women's soccer more engaging this season? One might argue yes, seeing as there is a statistically significant increase in the average goals score per game!
+```{r}
+matches_2022_early <- matches_2022 |> filter(date < '2022-09-14')
+matches_2022_early <- matches_2022_early |> mutate(total_goals = goals + defensive_goals)
+```
+
+```{r}
+t.test(matches_2022_early$total_goals, matches_2023$total_goals)
+```
+
+P value is much higher, closer to the 0.05 rejection threshold. t-value is good, but it would indicate that the scoring in non-conference play is now closer to being "noisy" than having any sort of statistical significance.
+
+Publication: The statistics show us that for most viewers, the competitive level in NCAA women's soccer non-conference play has maintained between last season and this one.

@@ -33,7 +33,7 @@ attendance_wide <- attendance_two_years |> pivot_wider(names_from=Year, values_f
 Finally, we'll add a percentage change column to that dataframe (remember, it's (New-Old)/Old) and arrange it to see the results.
 
 ```{r}
-attendance_wide <- attendance_wide |> mutate(percent_change = ((`2022`-`2019`)/`2019`)*100) |> filter(percent_change < 1 & percent_change > -1)
+attendance_wide <- attendance_wide |> mutate(percent_change = ((`2022`-`2019`)/`2019`)*100) |> filter(percent_change < 2 & percent_change > -2) |> arrange(desc(percent_change))
 ```
 
 Some of these clearly are influenced by performance on the field. Below, describe the most interesting results (positive or negative) and what you think might be going on with them. Feel free to do some googling and describe what other data would be helpful to clarify what the best stories here might be. What surprises you about these results?
