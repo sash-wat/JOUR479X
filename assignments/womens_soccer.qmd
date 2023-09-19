@@ -122,3 +122,69 @@ t.test(matches_2022_early$total_goals, matches_2023$total_goals)
 P value is much higher, closer to the 0.05 rejection threshold. t-value is good, but it would indicate that the scoring in non-conference play is now closer to being "noisy" than having any sort of statistical significance.
 
 Publication: The statistics show us that for most viewers, the competitive level in NCAA women's soccer non-conference play has maintained between last season and this one.
+
+
+
+
+
+
+###Correlations
+```{r}
+correlations <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2023.csv")
+```
+```{r}
+newcorrelations <- correlations |> 
+  mutate(
+    differential = goals - defensive_goals
+    )
+```
+
+```{r}
+newcorrelations |> summarise(correlation = cor(differential, fouls, method="pearson"))
+```
+
+```{r}
+newcorrelations |> 
+  summarise(correlation = cor(differential, yellow_cards, method="pearson"))
+```
+
+```{r}
+fit <- lm(differential ~ fouls, data = newcorrelations)
+summary(fit)
+```
+
+```{r}
+newcorrelations |> 
+  summarise(correlation = cor(differential, so_g, method="pearson"))
+```
+
+```{r}
+net <- lm(differential ~ so_g, data = newcorrelations)
+summary(net)
+```
+
+
+```{r}
+newcorrelations <- newcorrelations |> 
+  mutate(
+    sh_pct = (so_g/sh_att)*100
+    )
+```
+
+
+
+```{r}
+newcorrelations |> 
+  summarise(correlation = cor(saves, defensive_corners, method="pearson"))
+```
+```{r}
+temp <- select(newcorrelations, c(saves, defensive_corners))
+```
+
+
+```{r}
+something <- lm(saves ~ defensive_corners, data = newcorrelations)
+summary(something)
+```
+
+It looks like teams that allow corners would therefore need their keepers to make more saves, as corners can usually result in closer looks to the goal. However, statistically, it would seem that the relationship isn't as clean, as evidenced by a game where a keeper only made 4 saves despite facing 18 corners.
