@@ -1,0 +1,97 @@
+```{r}
+library(tidyverse)
+library(cfbfastR)
+```
+
+```{r}
+plays_2023 <- cfbd_pbp_data(year=2023)
+
+```
+```{r}
+plays_2023 |> filter(drive_number ==1, play_number==1, play_type != "Kickoff") |> distinct(home, play_type)
+```
+
+
+College Football Regression Analysis Assignment:
+```{r}
+logs <- read_csv("../data/footballlogs1122.csv")
+
+logs <- logs |> mutate(
+  Differential = TeamScore - OpponentScore)
+
+head(logs)
+```
+
+Create a regression investigating whether the number of penalties can predict the score differential. In a paragraph below this code block, describe the results: what is the p-value, and does it mean the results are random? Using the r-squared value, how much of the differential can be explained by penalty yards? How useful is this regression?
+```{r}
+ols1 <- lm(Differential ~ Penalties, data=logs)
+summary(ols1)
+```
+Some statistics about this regression:
+- p-value is significantly below 0.05, it is 0.01058.
+- Adj. R^2 value is 0.0003006, which means that about 0.03% of the variance in differential can be explained by the number of penalties a team gets.
+
+I would say that this regression isn't THAT useful in the larger sense of writing a story. It does (from the p-value and F-statistic) show us that there is something of statistical significance to chase down here, but the R^2 value is concerningly low.
+
+Building my own regression model:
+
+***NOTE: I'm using a Lasso Regression model here with Cross Fold Validation to quickly find which factors are most useful to use. The Lasso regression, by its mathematical use of a penalty parameter, is better than typical OLS because it will only utilize factors that provide the most addition to R^2***
+
+```{r}
+library(glmnet)
+newlogs <- na.omit(logs)
+y <- newlogs$Differential
+z <- newlogs |> select_if(is.numeric)
+x <- data.matrix(subset(z, select = -c(Differential, TeamScore, OpponentScore, Game, month, year)))
+```
+***In the above cell, I'm doing a few things to make sure the Lasso functions properly. I'm omitting all rows that have NAs. This would've been done by the standard multiple regression, but the glmnet library's LassoCV doesn't have functionality to automatically omit NAs because of how it takes its parameters. I'm setting the y variable to the differential column, and the x value to a 2-d matrix of all numeric values within the dataset, and then taking out differential, team score, and the opponent score, as these would severely skew and mess up the results of the Lasso. We want to find the best parameters/regressors BESIDES those three that predict differential.***
+
+```{r}
+cv_model <- cv.glmnet(x, y, alpha = 1)
+
+best_lambda <- cv_model$lambda.min
+best_lambda
+```
+
+***This chunk of code is running the crossfold validation and finding us the best lambda, or in other words, the best penalty parameter. It becomes important when we run the Lasso***
+
+```{r}
+best_model <- glmnet(x, y, alpha = 1, lambda = best_lambda)
+coef(best_model)
+```
+```{r}
+best_model
+```
+
+
+In the output of this cell, we can see that most of the parameters (38) are non-zero, with a %Dev (equivalent to R^2) of 93.29. Some interesting points I picked up on from the results of the regression:
+- For every passing Touchdown your team scores, the expected differential goes up by 4.6 points. Obviously, a touchdown is worth 6 points, so it's perhaps something to look at for a potential story. Rushing touchdowns have about the same point differential value add, but 0.007 more. Maybe it's better to just focus on rushing TDs and then scale up?
+- Allowing the opposing team to score either a Passing or Rushing touchdown shifts the expected differential more negatively than your team scoring on offense. While it's not really THAT much of a difference (0.5 for Passing TD and 0.05 for Rushing TD), maybe it gives some amount of credence to the "Defense Wins Championships" mantra
+- One shared null parameter is Rushing attempts. Per the results of the regression, it has no impact on the game's point differential how many times your team or the other team runs the ball. This seems a little counterintuitive because the value of a rushing touchdown is higher than that of a passing touchdown, so maybe you should pass all the way to the red zone and then run it in?
+- There seems to be a slight fatigue factor! The offensive plays parameter has a NEGATIVE coefficient, indicating that more plays being run hurts your differential! Being efficient on the field seems to count for something!
+- Turnovers are almost as valuable as half of or 2/3 of a field goal according to the regression! It's better to force a fumble than intercept a pass according to the model, maybe there's some sort of mental effect about fumbling that hits a defense when their offense fumbles.
+
+
+```{r}
+newlogs <- newlogs |> filter(Differential <= 7)
+newlogs <- na.omit(newlogs)
+y <- newlogs$Differential
+z <- newlogs |> select_if(is.numeric)
+x <- data.matrix(subset(z, select = -c(Differential, TeamScore, OpponentScore, Game, month, year)))
+cv_model <- cv.glmnet(x, y, alpha = 1)
+
+best_lambda <- cv_model$lambda.min
+best_model <- glmnet(x, y, alpha = 1, lambda = best_lambda)
+coef(best_model)
+```
+```{r}
+best_model
+```
+
+In games that are close (final point differential <= 7, indicating a one possession game in the end), the model actually performs worse! The number of non-zero parameters has remained constant, but the %dev output has dropped by 6%, which means that closer games aren't "as predictable" as other kinds of games!
+
+Overall thoughts:
+
+I think there's maybe some sort of use for these Lasso regressions in journalism. To answer the first question, there isn't any sort of meaningful connection between penalties and point differentials in games. The p value is in an acceptable range, but the R^2 is way too low to use it in a good way. I think an interesting angle to this would be to change up what we're looking at with the regressions. In the lasso specifically, are what areas can we target that most drive a team's scoring. (Y variable would be TeamScore, regressors would be all offensive categories) There are a bunch of questions to ask, such as, but not limited to:
+- If we need a touchdown, should we be passing or running more? The same question can be asked for field goals!
+- Somehow, does scoring more rushing touchdowns make an offense better than if they scored more rushing touchdowns? Maybe there's a case for the death by field goals movement too.

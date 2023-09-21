@@ -1,0 +1,103 @@
+```{r}
+library(tidyverse)
+```
+
+```{r}
+logs <- read_csv("../data/cbblogs1523.csv")
+```
+
+```{r}
+logs <- logs |> mutate(
+  Differential = TeamScore - OpponentScore, 
+  NetRebounds = TeamTotalRebounds - OpponentTotalRebounds,
+  TurnoverMargin = TeamTurnovers - OpponentTurnovers)
+
+head(logs)
+```
+
+```{r}
+rebounds <- lm(Differential ~ NetRebounds, data=logs)
+summary(rebounds)
+```
+
+Low (good) p-value, a lower-than-good R-squared value, and the actual equation looks okay. Looks like rebounds might be a good predictor, but would be stronger when compared with other factors.
+
+```{r}
+model1 <- lm(Differential ~ NetRebounds + TurnoverMargin, data=logs)
+summary(model1)
+```
+
+```{r}
+library(Hmisc)
+```
+
+```{r}
+simplelogs <- logs |> select_if(is.numeric) |> select(-Game) |> select(Differential, NetRebounds, TurnoverMargin, TeamFGPCT, TeamTotalRebounds, OpponentFGPCT, OpponentTotalRebounds)
+```
+
+```{r}
+cormatrix <- rcorr(as.matrix(simplelogs))
+
+cormatrix$r
+```
+
+```{r}
+model2 <- lm(Differential ~ NetRebounds + TurnoverMargin + TeamFGPCT + OpponentFGPCT, data=logs)
+summary(model2)
+```
+
+```{r}
+logs |> 
+  filter(
+    Team == "Maryland" & Season == '2022-2023'
+    ) |> 
+  summarise(
+    meanNetRebounds = mean(NetRebounds),
+    meanTurnoverMargin = mean(TurnoverMargin),
+    meanTeamFGPCT = mean(TeamFGPCT),
+    meanOpponentFGPCT = mean(OpponentFGPCT)
+  )
+```
+
+```{r}
+logs |> 
+     filter(
+         Team == "Maryland" & Season == '2022-2023'
+     ) |> summarise(avg_score = mean(TeamScore), avg_opp = mean(OpponentScore))
+```
+
+
+```{r}
+library(glmnet)
+newlogs <- na.omit(logs)
+y <- newlogs$Differential
+z <- newlogs |> select_if(is.numeric)
+x <- data.matrix(subset(z, select = -c(Differential, TeamScore, OpponentScore)))
+```
+
+```{r}
+cv_model <- cv.glmnet(x, y, alpha = 1)
+
+best_lambda <- cv_model$lambda.min
+best_lambda
+plot(cv_model)
+```
+
+```{r}
+best_model <- glmnet(x, y, alpha = 1, lambda = best_lambda)
+coef(best_model)
+```
+
+Using the Lasso Regression model with cross validation, we can see which factors are BEST to predict differential. I eliminated differential, as well as team and opponent score as factors, since including these factors would severely skew and zero out other factors. Based on this, there are a handful of factors that don't really matter. Lasso regressions are used to handle the issue of multicollinearity, and automatically handles factor selection by applying a penalty to selecting non-zero values for values for each factor, forcing the model to pick the best factors.
+
+Best Factors now include TeamFG, TeamFGPCT, Team3P, Team3PPCT, TeamFT, TeamAssists, and the same factors (except for Opponent 3 point %), as well as NetRebounds and Turnover margin.
+
+Intuitively, the selected factors make sense, as these factors most contribute to scoring, and therefore a differential at the end of games.
+
+```{r}
+best_model
+```
+
+Penalization parameter of 0.1325
+13 Non-Zero Parameters
+99.9% of deviance explained by regressors
