@@ -188,3 +188,31 @@ summary(something)
 ```
 
 It looks like teams that allow corners would therefore need their keepers to make more saves, as corners can usually result in closer looks to the goal. However, statistically, it would seem that the relationship isn't as clean, as evidenced by a game where a keeper only made 4 saves despite facing 18 corners.
+
+
+Frustration Model:
+```{r}
+matches_2023 <- matches_2023 |> mutate(Differential = team_score - opponent_score)
+```
+```{r}
+frustrate <- lm(Differential ~ so_g + defensive_so_g, data=matches_2023)
+summary(frustrate)
+```
+
+```{r}
+matches_2023 <- matches_2023 |> mutate(predicted = predict(frustrate))
+matches_2023 <- matches_2023 |> mutate(residuals = residuals(frustrate))
+```
+
+```{r}
+big_ten = c('Wisconsin Badgers', 'Maryland Terrapins, Terps', 'Michigan Wolverines', 'Rutgers Scarlet Knights', 'Indiana Hoosiers', 'Iowa Hawkeyes', 'Penn St. Nittany Lions', 'Minnesota Golden Gophers', 'Illinois Fighting Illini', 'Ohio St. Buckeyes', 'Northwestern Wildcats', 'Michigan St. Spartans', 'Purdue Boilermakers')
+```
+
+```{r}
+matches_2023 |>  arrange(residuals) |> select(date, team, opponent, home_away, outcome, team_score, opponent_score, so_g, defensive_so_g, Differential, predicted, residuals)
+```
+
+```{r}
+matches_2023 |> filter(team %in% big_ten, outcome == 'Draw') |>  arrange(residuals) |> select(date, team, opponent, home_away, outcome, team_score, opponent_score, so_g, defensive_so_g, predicted, residuals)
+```
+

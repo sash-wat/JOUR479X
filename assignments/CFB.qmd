@@ -73,7 +73,7 @@ In the output of this cell, we can see that most of the parameters (38) are non-
 
 
 ```{r}
-newlogs <- newlogs |> filter(Differential <= 7)
+newlogs <- newlogs |> filter(abs(Differential) <= 7)
 newlogs <- na.omit(newlogs)
 y <- newlogs$Differential
 z <- newlogs |> select_if(is.numeric)
