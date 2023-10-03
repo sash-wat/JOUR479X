@@ -42,6 +42,12 @@ vb4 <- vb3 |>
 
 head(vb4)
 ```
+```{r}
+vb6 <- vb4 |> select(team, avgKills, avgDefKills, TotalZscore, zScoreKills, zScoreDefKills) |> arrange(desc(avgKills))
+vb6
+```
+
+
 
 ```{r}
 vb5 <- vb4 |> select(team, TotalZscore) |> arrange(desc(TotalZscore))
@@ -65,4 +71,8 @@ Washington State: 13-1
 
 All of these top 10 Z-score teams are clearly deserving, and their records reflect a significant performance over the mean. Maryland is 47th out of 333 teams, so definitely above average but definitely not to the level of Arizona State or the notable powerhouse that is Nebraska.
 
-Georgia Southern is the standout to me here for a potential story. Again, I'm not really tied into college volleyball at any level, so maybe there's some information/context about Georgia Southern I'm missing here, but compared to the other schools with much larger names, it seems like they shouldn't be in this top 10 and are the odd one out. However, their record is strong, and perhaps a deep dive into what they're doing could be useful. Is there competition bad, or are they just a really good team right now?
+Georgia Southern is the standout to me here for a potential story. Again, I'm not really tied into college volleyball at any level, so maybe there's some information/context about Georgia Southern I'm missing here, but compared to the other schools with much larger names, it seems like they shouldn't be in this top 10 and are the odd one out. However, their record is strong, and perhaps a deep dive into what they're doing could be useful. Is their competition bad, or are they just a really good team right now?
+
+In class assignment, October 3, 2023:
+
+The best offense is a good defense! Looking at the offensive and defensive statistics for women's volleball teams across the nation, the top teams in the nation, Arizona State, Nebraska, Tennessee, and others, perform much stronger on the defensive side, as compared to those who over-perform on the offensive side of the game. Programs like Nebraska are amongst the top defensive performers, allowing just 32 kills per game, while creating 44 of their own. Nebraska's record stands at an undefeated 11-0, but when looking at our best offensive performers, like Murray State, who create a whopping 55.6 kills per game, sit at just 9-5, far outside of what anyone would consider a national title contending squad. On a national scale, there's definitely a strong tilt towards those who perform well on the defensive side of the ball
