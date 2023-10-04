@@ -1,0 +1,106 @@
+```{r}
+library(tidyverse)
+```
+
+
+Questions from ELMS:
+
+Does that data already exist? Can you get it?
+
+The data already exists, and I've added it to the "TransferMarkt Data" Folder in my presentations folder.
+```{r}
+clubs <- read_csv("./TransferMarkt Data/clubs.csv")
+players <- read_csv("./TransferMarkt Data/players.csv")
+player_valuations<- read_csv("./TransferMarkt Data/player_valuations.csv")
+games <- read_csv("./TransferMarkt Data/games.csv")
+game_events <- read_csv("./TransferMarkt Data/game_events.csv")
+comps <- read_csv("./TransferMarkt Data/competitions.csv")
+club_games <- read_csv("./TransferMarkt Data/club_games.csv")
+appearances <- read_csv("./TransferMarkt Data/appearances.csv")
+
+head(game_events)
+```
+```{r}
+club_games
+```
+
+
+Do you need assistance in getting it?
+Nope! It's all easy to 
+
+
+What time frame do you want/need data from?
+The data I have goes back to the 2012-13 season and spans a wide range of leagues, so this amount of data is more than enough.
+
+Will you have to improve or augment the data in order to answer your question? If so, how?
+Yes, and a lot. It's structured as a relation DB, so there will need to be a lot of joins and zips to compress player stats. I'm planning on looking at discussions and posted
+code on Kaggle to see if there's anything that will speed up my analysis process
+
+Are there other examples of this kind of work (specific or general)? If so, provide them.
+
+https://www.kaggle.com/code/luisgasparcordeiro/market-value-eda -> some inspiration from this, but it's nowhere near the depth I want to get to
+https://www.kaggle.com/code/luisgasparcordeiro/player-stats-by-season -> python code to aggregate stats. using this, I did some googling and figured out how to translate
+the python code that user luisgasparcordeiro made into R, which can be seen below.
+
+
+```{r}
+player_stats <-function(name, year) {
+
+df <- merge(appearances, games, by="game_id", all.x=TRUE)
+
+#nrow(df)
+df$goals_for <- ifelse(df$home_club_id == df$player_club_id, df$home_club_goals,
+                           ifelse(df$away_club_id == df$player_club_id, df$away_club_goals, NA))
+
+df$goals_against <- ifelse(df$home_club_id == df$player_club_id, df$away_club_goals,
+                               ifelse(df$away_club_id == df$player_club_id, df$home_club_goals, NA))
+    df$clean_sheet <- ifelse(df$goals_against == 0, 1,
+                            ifelse(df$goals_against > 0, 0, NA))
+    
+
+if (year == "all") {
+  df <- df |> group_by(player_id, player_name, season) |> 
+  summarise(
+    g = sum(goals),
+    a = sum(assists),
+    cs = sum(clean_sheet),
+  ) |> filter(player_name == name)
+}
+else {
+  df <- df |> group_by(player_id, player_name, season) |> 
+  summarise(
+    g = sum(goals),
+    a = sum(assists),
+    cs = sum(clean_sheet),
+  ) |> filter(player_name == name) |> filter(season == year)
+}
+
+df
+
+}
+ 
+
+```
+```{r}
+messi <- player_stats("Lionel Messi", "all")
+#messivals <- merge(messi, player_valuations, by="player_id", all.x = TRUE)
+messisvalue <- player_valuations |> filter(player_id == 28003)
+library(ggplot2)
+ggplot(messisvalue, aes(x=messisvalue$datetime, y=messisvalue$market_value_in_eur)) +
+  geom_line()
+```
+```{r}
+ggplot(messi, aes(x=messi$season, y=(messi$g +messi$a) )) +
+  geom_line()
+```
+
+
+
+```{r}
+player_stats('Cristiano Ronaldo', "all")
+```
+
+```{r}
+test <- read_csv("https://drive.google.com/file/d/1u4Q_TYO_z8XYU_J5Si4-A0UwIef1ndy8/view?usp=drive_link")
+```
+
