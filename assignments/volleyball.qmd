@@ -76,3 +76,8 @@ Georgia Southern is the standout to me here for a potential story. Again, I'm no
 In class assignment, October 3, 2023:
 
 The best offense is a good defense! Looking at the offensive and defensive statistics for women's volleball teams across the nation, the top teams in the nation, Arizona State, Nebraska, Tennessee, and others, perform much stronger on the defensive side, as compared to those who over-perform on the offensive side of the game. Programs like Nebraska are amongst the top defensive performers, allowing just 32 kills per game, while creating 44 of their own. Nebraska's record stands at an undefeated 11-0, but when looking at our best offensive performers, like Murray State, who create a whopping 55.6 kills per game, sit at just 9-5, far outside of what anyone would consider a national title contending squad. On a national scale, there's definitely a strong tilt towards those who perform well on the defensive side of the ball
+
+```{r}
+vb_players <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/vb_rosters_2023_24.csv")
+```
+

@@ -1,5 +1,5 @@
 ```{r}
-library(tidyverse)
+suppressMessages(library(tidyverse))
 ```
 
 
@@ -90,6 +90,14 @@ ggplot(messisvalue, aes(x=messisvalue$datetime, y=messisvalue$market_value_in_eu
   geom_line()
 ```
 ```{r}
+cr7value <- player_valuations |> filter(player_id == 8198)
+library(ggplot2)
+ggplot(cr7value, aes(x=cr7value$datetime, y=cr7value$market_value_in_eur)) +
+  geom_line()
+```
+
+
+```{r}
 ggplot(messi, aes(x=messi$season, y=(messi$g +messi$a) )) +
   geom_line()
 ```
@@ -97,7 +105,55 @@ ggplot(messi, aes(x=messi$season, y=(messi$g +messi$a) )) +
 
 
 ```{r}
-player_stats('Cristiano Ronaldo', "all")
+cr7 <- player_stats('Cristiano Ronaldo', "all")
+cr7
 ```
 
+
+```{r}
+ggplot() +
+  geom_line(data = cr7, aes(x=cr7$season, y=(cr7$g +cr7$a)), color="red") +
+  geom_point() +
+  geom_line(data=messi, aes(x=messi$season, y=(messi$g +messi$a) ), color="lightblue") +
+  xlab("Season") +
+  ylab("G + A")
+```
+
+```{r}
+nb <- player_stats('Nicolò Barella', "all")
+nb
+```
+
+```{r}
+#Marc-Andre ter Stegen is a German goalkeeper who plays for FC Barcelona, 
+#so I wanted to see what his clean sheets stat looked like over time.
+# His name also contains special characters and a hypen, so this is
+# something I'll have to take note of. I can only presume this will continue
+# to be the case for players like Danish centerback Simon Kjae(æ)r 
+mats<- player_stats('Marc-André ter Stegen', "all")
+mats
+```
+
+
+Some notes on my data now that I've handled some special cases/done an introductory
+exploration:
+
+1. Player names need to be specific to a fairly strong degree. As noted above,
+players like Marc-André ter Stegen follow a very specific naming format, and
+if you don't follow this, it'll break any sort of database parse you run. This
+is probably going to be a hassle for names of players who come from nations where
+English is not the first or predominant language, like Barella, an Italian midfielder
+who players for Inter Milan
+
+2. The dataset is MASSIVE. Going by the R environment outputs, the appearances dataframe
+has over 1 MILLION rows, so parsing through this is going to require some clever joining
+with other tables, like I've done in my player_stats function.
+
+3. Another somewhat difficult problem: Every player has a unique set of valuations, and
+as a result, there isn't a set number or pattern to how valuations are put out. To fix this
+for the purposes of my investigation, I need to get 2 valuations per player per year, using
+the following logic/methodology:
+  - Seasons run from August to May, with Transfer windows running from June-August and December to January. For the June Valuation, I need to take into account the player's statistics for the previous season, and some how pair those statistics to the June transfer window FOLLOWING the season that they achieved those statistics. I'm a bit unsure as to how to model the winter transfer window valuations, and as such, might drop them since the valuations there can be a bit wonky and reliant on summer valuations. This is all a long winded way of saying I'm going to need to find a way to eliminate valuations not in June/July/August, but then also tie them to a PREVIOUS season's statistics. Still working through the R implementation of that, but the logic and thought process is there.
+  
+4. The data starts in the 2012-13 season, and runs through the 2022-23 season, with some**** data for the 2023-24 season. The data is scraped from Transfermarkt every week or so, but my data is obviously now static, and I felt 10 years of data was enough to work with. There will be some entries for the 23-24 season, but it shouldn't cause too much of an issue.
 

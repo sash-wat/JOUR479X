@@ -95,3 +95,91 @@ Overall thoughts:
 I think there's maybe some sort of use for these Lasso regressions in journalism. To answer the first question, there isn't any sort of meaningful connection between penalties and point differentials in games. The p value is in an acceptable range, but the R^2 is way too low to use it in a good way. I think an interesting angle to this would be to change up what we're looking at with the regressions. In the lasso specifically, are what areas can we target that most drive a team's scoring. (Y variable would be TeamScore, regressors would be all offensive categories) There are a bunch of questions to ask, such as, but not limited to:
 - If we need a touchdown, should we be passing or running more? The same question can be asked for field goals!
 - Somehow, does scoring more rushing touchdowns make an offense better than if they scored more rushing touchdowns? Maybe there's a case for the death by field goals movement too.
+
+
+```{r}
+library(waffle)
+```
+
+```{r}
+md <- c("Rushing"=175, "Passing"=314)
+ms <- c("Rushing"=100, "Passing"=221)
+```
+
+```{r}
+waffle(
+        md, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+)
+```
+
+```{r}
+passing <- c("Maryland"=314, "Michigan State"=221)
+waffle(
+        passing, 
+        rows = 10, 
+        title="Maryland vs Michigan State: passing", 
+        xlab="1 square = 1 yard", 
+        colors = c("red", "green")
+)
+```
+
+```{r}
+iron(
+ waffle(md, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+        ),
+ waffle(ms, 
+        rows = 10, 
+        title="Michigan State's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "green")
+        )
+)
+```
+
+```{r}
+md <- c("Rushing"=175, "Passing"=314)
+ms <- c("Rushing"=100, "Passing"=221, 168)
+```
+
+```{r}
+iron(
+ waffle(md, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+        ),
+ waffle(ms, 
+        rows = 10, 
+        title="Michigan State's offense", 
+        xlab="1 square = 1 yard",
+        colors = c("black", "green", "white")
+        )
+)
+```
+
+```{r}
+iron(
+ waffle(md/2, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 2 yard", 
+        colors = c("black", "red")
+        ),
+ waffle(ms/2, 
+        rows = 10, 
+        title="Michigan State's offense", 
+        xlab="1 square = 2 yard",
+        colors = c("black", "green", "white")
+        )
+)
+```
+
