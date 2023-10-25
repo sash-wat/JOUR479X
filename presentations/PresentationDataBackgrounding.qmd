@@ -48,7 +48,6 @@ player_stats <-function(name, year) {
 
 df <- merge(appearances, games, by="game_id", all.x=TRUE)
 
-#nrow(df)
 df$goals_for <- ifelse(df$home_club_id == df$player_club_id, df$home_club_goals,
                            ifelse(df$away_club_id == df$player_club_id, df$away_club_goals, NA))
 
@@ -157,3 +156,54 @@ the following logic/methodology:
   
 4. The data starts in the 2012-13 season, and runs through the 2022-23 season, with some**** data for the 2023-24 season. The data is scraped from Transfermarkt every week or so, but my data is obviously now static, and I felt 10 years of data was enough to work with. There will be some entries for the 23-24 season, but it shouldn't cause too much of an issue.
 
+```{r}
+temp <- player_valuations |> 
+  filter(player_id == 8198) |> filter(format(date, "%m") == "05" | format(date, "%m") == "06" | format(date, "%m") == "07" | format(date, "%m") == "08") |> 
+  arrange(date)
+
+temp <- temp |>
+  mutate(year = lubridate::year(date)) |>  # Create a new column with the year
+  group_by(year) |>
+  filter(date == max(date)) |>
+  select(-year)
+temp
+```
+
+```{r}
+ggplot() +
+  geom_line(data = temp, aes(x=temp$date, y=temp$market_value_in_eur), color="red")
+```
+This graph is way more smoothed out and looks like what I'm aiming for. A rise with a peak and a drop off, and this comes from only taking 1 date per year spanning from May to August, when leagues are typically in their off season. Most leagues end in mid-May, and end in mid-August, which is why I chose this acceptable range of values.
+
+
+```{r}
+temp |>
+  mutate(year = lubridate::year(date)) |>  # Create a new column with the year
+  group_by(year) |>
+  filter(date == max(date))
+
+temp
+```
+```{r}
+t <- list()
+u <- list()
+
+for (row1 in 1:nrow(cr7)) {
+  for (row2 in 1:nrow(temp)) {
+    if (temp[row2, "year"] == cr7[row1, "season"] + 1) {
+      t <- append(t, cr7[row1, "g"])
+      u <- append(u, temp[row2, "market_value_in_eur"])
+    }
+  }
+  
+}
+
+df <- data.frame(goals = unlist(t), value=unlist(u))
+
+ggplot() +
+  geom_point(data = df, aes(x=goals, y=value), color="red")
+```
+
+So here I have successfully shown, for one case, how to extract goals and values for a player, then link them such that for a season n, the value can in the future be represented as a function of the goals (and other numerical statistics) in season n-1. For the final step, I will convert this one-off analysis into a function, then perform a multiple regression using goals, assists, clean sheets, and perhaps appearances by position.
+
+I'm going by position since I suspect goalies will have a much higher R^2 in clean sheets than in assists or goals, but perhaps midfielders and attackers can be better predicted by a combination of stats

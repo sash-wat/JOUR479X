@@ -1,0 +1,63 @@
+```{r}
+library(tidyverse)
+logs <- read_csv("https://dwillis.github.io/sports-data-files/fieldhockey22.csv")
+```
+
+```{r}
+winlosslogs <- logs |> 
+  mutate(
+    winloss = case_when(
+      grepl("W", result) ~ 1, 
+      grepl("L", result) ~ 0)
+)
+
+goals_wins <- winlosslogs |> 
+  group_by(team) |> 
+  summarise(
+    wins = sum(winloss), 
+    total_goals = sum(goals)
+    ) |> na.omit()
+```
+
+```{r}
+ggplot() + geom_point(data=goals_wins, aes(x=total_goals, y=wins))
+```
+
+```{r}
+ggplot() + 
+  geom_point(data=goals_wins, aes(x=total_goals, y=wins)) +
+  geom_smooth(data=goals_wins, aes(x=total_goals, y=wins), method="lm")
+```
+
+```{r}
+fit <- lm(wins ~ total_goals, data = goals_wins)
+summary(fit)
+```
+
+```{r}
+umd <- goals_wins |> filter(team == "Maryland Terrapins, Terps")
+ggplot() + 
+  geom_point(data=goals_wins, aes(x=total_goals, y=wins)) +
+  geom_smooth(data=goals_wins, aes(x=total_goals, y=wins), method="lm") +
+  geom_point(data=umd, aes(x=total_goals, y=wins), color="red")
+```
+
+```{r}
+fouls_wins <- winlosslogs |> 
+  group_by(team) |> 
+  summarise(
+    wins = sum(winloss),
+    total_fouls = sum(fouls)
+    ) |> 
+  na.omit()
+
+ggplot() + 
+  geom_point(data=fouls_wins, aes(x=total_fouls, y=wins)) +
+  geom_smooth(data=fouls_wins, aes(x=total_fouls, y=wins), method="lm")
+```
+
+```{r}
+foulsfit <- lm(wins ~ total_fouls, data = fouls_wins)
+summary(foulsfit)
+```
+
