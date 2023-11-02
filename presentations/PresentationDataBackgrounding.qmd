@@ -9,6 +9,10 @@ Does that data already exist? Can you get it?
 
 The data already exists, and I've added it to the "TransferMarkt Data" Folder in my presentations folder.
 ```{r}
+
+#data is stored locally because it's literally too big to put into standard GitHub file storage,
+#and I didn't really feel like setting up LFS for this project
+
 clubs <- read_csv("~/Desktop/TransferMarkt Data/clubs.csv")
 players <- read_csv("~/Desktop/TransferMarkt Data/players.csv")
 player_valuations<- read_csv("~/Desktop/TransferMarkt Data/player_valuations.csv")
@@ -187,23 +191,34 @@ temp
 ```{r}
 t <- list()
 u <- list()
+v <- list()
 
 for (row1 in 1:nrow(cr7)) {
   for (row2 in 1:nrow(temp)) {
     if (temp[row2, "year"] == cr7[row1, "season"] + 1) {
       t <- append(t, cr7[row1, "g"])
       u <- append(u, temp[row2, "market_value_in_eur"])
+      v <- append(v, temp[row2, "year"])
     }
   }
   
 }
 
-df <- data.frame(goals = unlist(t), value=unlist(u))
+df <- data.frame(goals = unlist(t), value=unlist(u), season=unlist(v))
 
 ggplot() +
-  geom_point(data = df, aes(x=goals, y=value), color="red")
+  geom_point(data = df, aes(x=goals, y=value), color="red") +
+  geom_smooth(data=df, aes(x=goals, y=value), method="lm") +
+  geom_text_repel(data=df, aes(x=goals, y=value, label=season))
 ```
 
 So here I have successfully shown, for one case, how to extract goals and values for a player, then link them such that for a season n, the value can in the future be represented as a function of the goals (and other numerical statistics) in season n-1. For the final step, I will convert this one-off analysis into a function, then perform a multiple regression using goals, assists, clean sheets, and perhaps appearances by position.
 
 I'm going by position since I suspect goalies will have a much higher R^2 in clean sheets than in assists or goals, but perhaps midfielders and attackers can be better predicted by a combination of stats
+
+
+```{r}
+fit <- lm(value ~ goals, data = df)
+summary(fit)
+```
+

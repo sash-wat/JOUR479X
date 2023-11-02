@@ -1,0 +1,82 @@
+```{r}
+library(tidyverse)
+library(ggbeeswarm)
+library(ggrepel)
+set.seed(1234)
+playerswbb <- read_csv("https://thescoop.org/sports-data-files/wbb_players_2023.csv")
+```
+```{r}
+activeplayers <- playerswbb |> filter(position %in% c("C", "F", "G")) |> filter(mp>0)
+activeplayers <- activeplayers |> mutate(tspct=pts/(2*(fga+0.44*fta)))
+summary(activeplayers$fga)
+```
+
+```{r}
+shooters <- activeplayers |> filter(fga > 187)
+ggplot() + geom_beeswarm(data=shooters, aes(x=position, y=tspct), color="grey")
+```
+
+```{r}
+umd <- activeplayers |> 
+  filter(team == "Maryland") |> 
+  filter(fga>187) |> 
+  arrange(desc(tspct))
+```
+
+```{r}
+ggplot() + 
+  geom_beeswarm(
+    data=shooters, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_beeswarm(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="red")
+```
+
+```{r}
+ggplot() + 
+  geom_beeswarm(
+    data=shooters, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_beeswarm(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="red") +
+  geom_text_repel(
+    data=umd, 
+    aes(x=position, y=tspct, label=player))
+```
+
+
+
+```{r}
+ggplot() + 
+  geom_quasirandom(
+    data=shooters, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_quasirandom(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="red") +
+  geom_text_repel(
+    data=umd, 
+    aes(x=position, y=tspct, label=player))
+```
+
+```{r}
+ggplot() + 
+  geom_jitter(
+    data=shooters, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_jitter(
+    data=umd, 
+    aes(x=position, y=tspct), color="red") +
+  geom_text_repel(
+    data=umd, 
+    aes(x=position, y=tspct, label=player))
+```
+
