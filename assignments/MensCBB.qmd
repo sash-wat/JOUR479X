@@ -101,3 +101,64 @@ best_model
 Penalization parameter of 0.1325
 13 Non-Zero Parameters
 99.9% of deviance explained by regressors
+
+########## Early Season Analysis, November 9, 2023
+
+```{r}
+suppressMessages(allgames <- read_csv("https://raw.githubusercontent.com/dwillis/dwillis.github.io/main/docs/sports-data-files/cbblogs1524.csv"))
+suppressMessages(allumd <- allgames |> filter(TeamFull == "Maryland Terrapins"))
+library(lubridate)
+library(ggplot2)
+```
+
+```{r}
+#str_detect(allumd$W_L, "W")
+allumd <- allumd |>
+  mutate(winloss = case_when(
+    grepl("W", W_L) ~ 1, 
+    grepl("L", W_L) ~ 0)
+) 
+
+umdSeasons <- allumd |> 
+  group_by(Season) |> 
+  summarise(
+    wins = sum(winloss), 
+    FG = sum(TeamFG), 
+    FGA = sum(TeamFGA), 
+    FGPercent = (sum(TeamFG)/sum(TeamFGA))
+  )
+
+umdEarlyGames <- allumd |> filter(Game <4)
+
+umdEarlyGames <- umdEarlyGames |> 
+  group_by(Season) |> 
+  summarise(
+    wins = sum(winloss), 
+    FG = sum(TeamFG), 
+    FGA = sum(TeamFGA), 
+    FGPercent = (sum(TeamFG)/sum(TeamFGA))
+  )
+```
+
+```{r}
+ggplot() +
+  geom_point(data=umdSeasons, aes(x=Season, y = FGPercent), color="black") +
+  geom_point(data=umdEarlyGames, aes(x=Season, y = FGPercent), color="red") +
+  geom_point(data=umdEarlyGames, aes(x=Season, y = wins/60), color="blue") +
+  geom_point(data=umdSeasons, aes(x=Season, y = wins/60), color="green") +
+  scale_y_continuous(name = "Field Goal Percentage, as a decimal",
+    sec.axis = sec_axis( trans=~.*60, name="Wins")) +
+  labs()
+```
+```{r}
+windiff <- c(16, 21, 13, 12, 19, 0)
+umdSeasons <- umdSeasons |> mutate(earlyFGPercent = umdEarlyGames$FGPercent,  winsafter3 = windiff, FGgap = umdSeasons$FGPercent - earlyFGPercent)
+```
+
+Trying to model FG differential in previous seasons from early games to the rest of the season and how many wins that nets you. (Do teams that cool off more win less, regardless of how hot they started?)
+
+```{r}
+ggplot() + 
+  geom_point(data=umdSeasons, aes(x=FGgap, y=winsafter3))
+```
+
