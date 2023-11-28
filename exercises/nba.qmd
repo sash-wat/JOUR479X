@@ -1,0 +1,28 @@
+```{r}
+library(tidyverse)
+library(formattable)
+library(ggplot2)
+library(ggalt)
+library(hoopR)
+```
+
+1610612761
+https://www.nba.com/team/1610612761/traditional
+
+```{r}
+lineups = nba_teamdashlineups(team_id = 1610612761)[[2]]
+lineups
+```
+
+```{r}
+lineups <- lineups |> 
+  mutate(across(starts_with("GP"):ncol(lineups), as.numeric))
+lineups
+```
+
+```{r}
+condensed <- lineups |> select(GROUP_NAME, GP, MIN, PLUS_MINUS)
+condensed |> arrange((PLUS_MINUS))
+```
+
+I'm surprised to see that when the Raptors play smaller, subbing out Jakob Poeltl for Gary Trent Jr., their +/- is +14, which seems to be a bit backwards considering the relevancy of a strong big man in today's NBA. There's also evidence for OG Anunoby being an amazing defender. When Gradey Dick is in his place, alongside the other Raptor starters, the Raptors are a lineup combination worst -25. I guess Gradey wasn't really drafted for his defense, but it's still quite bad.
